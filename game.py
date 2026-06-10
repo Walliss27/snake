@@ -35,17 +35,40 @@ class Game:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    self._snake.direction = Direction.LEFT
+                elif event.key == pygame.K_RIGHT:
+                    self._snake.direction = Direction.RIGHT
+                elif event.key == pygame.K_UP:
+                    self._snake.direction = Direction.UP
+                elif event.key == pygame.K_DOWN:
+                    self._snake.direction = Direction.DOWN
 
     def update(self) -> None:
         """Updates the state of the game (movements and collisions)."""
+        self._snake.move()
+        head_x, head_y = self._snake.body[0]
+        if head_x == self._apple.x and head_y == self._apple.y:
+            self._snake.grow()
+            self._apple.spawn(self._width, self._height, self._block_size, self._snake.body)
         
     def draw(self) -> None:
         """Renders all game objects on the screen."""
+        self._screen.fill(BLACK)
+        pygame.draw.rect(self._screen, RED, [self._apple.x, self._apple.y, self._block_size, self._block_size])
+        for block in self._snake.body:
+            pygame.draw.rect(self._screen, GREEN, [block[0], block[1], self._block_size, self._block_size])
+
+        pygame.display.update()
 
     def run(self) -> None:
         """Starts and maintains the game loop."""
         while True:
             self.handle_events()
+            self.update()
+            self.draw()
+            self._clock.tick(self._fps)
 
 if __name__ == "__main__":
     game = Game(600, 400)

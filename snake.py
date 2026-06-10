@@ -61,3 +61,6 @@ class Snake:
 
         if len(self._body) != self._length:
             self._body.pop()
+
+    def grow(self) -> None:
+        """Increases the snake's length by 1."""
