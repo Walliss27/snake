@@ -28,6 +28,8 @@ class Game:
         self._snake = Snake(x=width // 2, y=height // 2, block_size=self._block_size)
         self._apple = Apple(0, 0)
         self._apple.spawn(width, height, self._block_size, self._snake.body)
+        self._game_over = False
+        self._font = pygame.font.SysFont(None, 50)
 
     def handle_events(self) -> None:
         """Processes keyboard inputs and system events."""
@@ -52,6 +54,10 @@ class Game:
         if head_x == self._apple.x and head_y == self._apple.y:
             self._snake.grow()
             self._apple.spawn(self._width, self._height, self._block_size, self._snake.body)
+        if head_x < 0 or head_x >= self._width or head_y < 0 or head_y >= self._height:
+            self._game_over = True
+        if self._snake.check_self_collision():
+            self._game_over = True
         
     def draw(self) -> None:
         """Renders all game objects on the screen."""
@@ -69,6 +75,10 @@ class Game:
             self.update()
             self.draw()
             self._clock.tick(self._fps)
+
+    def show_game_over_screen() -> None:
+        """Display the Game over screen."""
+        pass
 
 if __name__ == "__main__":
     game = Game(600, 400)

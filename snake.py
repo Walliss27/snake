@@ -64,3 +64,9 @@ class Snake:
 
     def grow(self) -> None:
         """Increases the snake's length by 1."""
+        self._length += 1
+
+    def check_self_collision(self) -> bool:
+        """Checks if the snake's head collides with its own body."""
+        head = self._body[0]
+        return head in self._body[1:]
