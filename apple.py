@@ -19,7 +19,7 @@ class Apple:
     def x(self) -> int:
         """Returns the x coordinate of the apple."""
         return self._x
-    
+
     @property
     def y(self) -> int:
         """Returns the y coordinate of the apple."""
@@ -39,4 +39,3 @@ class Apple:
         while (self._x, self._y) in snake_body:
             self._x = random.randrange(0, width, block_size)
             self._y = random.randrange(0, height, block_size)
-    
