@@ -3,60 +3,61 @@
 from direction import Direction
 
 class Snake:
-    """Représente le serpent contrôlé par le joueur
+    """Represents the snake controlled by the player.
     
-    Gère l'état interne du serpent, notamment sa taille actuelle,
-    sa direction et les coordonnées de l'ensemble de son corps sur la grille.
+    Manages the internal state of the snake, notably its current length,
+    its direction, and the coordinates of its entire body on the grid.
     """
 
-    def __init__(self, x : int , y : int, longueur : int = 1,\
-                  direction : Direction = Direction.RIGHT, taille_bloc : int = 20) -> None:
-        """Initialise un nouveau serpent au début de la partie
+    def __init__(self, x : int , y : int, length : int = 1,\
+                  direction : Direction = Direction.RIGHT, block_size : int = 20) -> None:
+        """Initializes a new snake at the start of the game.
         
         Args:
-            x(int): La coordonnée x de départ (tête du serpent).
-            y(int): La coordonnée y de départ (tête du serpent).
-            longueur(int, optional): La taille initiale du serpent. Par défaut à 1.
-            direction(Direction, optional): La direction initiale du serpent. Par défaut à droite.
-            taille_bloc(int, optional): La taille des blocs, en nombre de pixels. Par défaut à 20.
+            x (int): The starting x coordinate (head of the snake).
+            y (int): The starting y coordinate (head of the snake).
+            length (int, optional): The initial length of the snake. Defaults to 1.
+            direction (Direction, optional): The initial direction of the snake. Defaults to RIGHT.
+            block_size (int, optional): The size of the blocks, in pixels. Defaults to 20.
         """
-        self._longueur = longueur
-        self._corps: list[tuple[int, int]] = [(x, y)]
+        self._length = length
+        self._body: list[tuple[int, int]] = [(x, y)]
         self._direction = direction
-        self._taille_bloc = taille_bloc
+        self._block_size = block_size
 
     @property
-    def corps(self) -> list[tuple[int, int]]:
-        """Renvoie une copie des coordonnées du corps du serpent."""
-        return self._corps[:]
+    def body(self) -> list[tuple[int, int]]:
+        """Returns a copy of the snake's body coordinates."""
+        return self._body[:]
     
     @property
     def direction(self) -> Direction:
-        """Renvoie la direction actuelle de la tête du serpent."""
+        """Returns the current direction of the snake's head."""
         return self._direction
     
     @direction.setter
     def direction(self, dir : Direction) -> None:
-        """Modifie la direction actuelle de la tête du serpent."""
-        mouvements_interdits = {
+        """Modifies the current direction of the snake's head."""
+        forbidden_moves = {
             Direction.UP: Direction.DOWN,
             Direction.DOWN: Direction.UP,
             Direction.LEFT: Direction.RIGHT,
             Direction.RIGHT: Direction.LEFT
         }
-        if dir != mouvements_interdits[self._direction]:
+        if dir != forbidden_moves[self._direction]:
             self._direction = dir
 
     def move(self) -> None:
-        """Permet le mouvement du serpent."""
-        x_head, y_head = self._corps[0]
+        """Handles the movement of the snake."""
+        x_head, y_head = self._body[0]
         if self._direction == Direction.UP:
-            self._corps.insert(0, (x_head, y_head - self._taille_bloc))
+            self._body.insert(0, (x_head, y_head - self._block_size))
         elif self._direction == Direction.DOWN:
-            self._corps.insert(0, (x_head, y_head + self._taille_bloc))
+            self._body.insert(0, (x_head, y_head + self._block_size))
         elif self._direction == Direction.LEFT:
-            self._corps.insert(0, (x_head - self._taille_bloc, y_head))
+            self._body.insert(0, (x_head - self._block_size, y_head))
         elif self._direction == Direction.RIGHT:
-            self._corps.insert(0, (x_head + self._taille_bloc, y_head))
-        if len(self._corps) != self._longueur:
-            self._corps.pop()
+            self._body.insert(0, (x_head + self._block_size, y_head))
+
+        if len(self._body) != self._length:
+            self._body.pop()
