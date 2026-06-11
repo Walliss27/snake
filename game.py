@@ -31,6 +31,7 @@ class Game:
         self._font_title = pygame.font.SysFont(None, 50)
         self._font_score = pygame.font.SysFont(None, 25)
         self._high_score = 0
+        self._game_started = False
 
     def handle_events(self) -> None:
         """Processes keyboard inputs and system events."""
@@ -39,6 +40,9 @@ class Game:
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
+                if not self._game_started:
+                    if event.key == pygame.K_SPACE:
+                        self._game_started = True
                 if self._game_over:
                     if event.key == pygame.K_SPACE:
                         self.reset()
@@ -84,12 +88,23 @@ class Game:
         """Starts and maintains the game loop."""
         while True:
             self.handle_events()
-            if not self._game_over:
+            if not self._game_started:
+                self.show_start_screen()
+            elif not self._game_over:
                 self.update()
                 self.draw()
             else:
                 self.show_game_over_screen()
             self._clock.tick(self._fps)
+
+    def show_start_screen(self) -> None:
+        """Displays the start menu screen."""
+        self._screen.fill(BLACK)
+        text_surface = self._font_title.render("SNAKE GAME", True, GREEN)
+        self._screen.blit(text_surface, (190, 150))
+        text_start = self._font_score.render("Press SPACE to start", True, WHITE)
+        self._screen.blit(text_start, (215, 210))
+        pygame.display.update()
 
     def show_game_over_screen(self) -> None:
         """Display the Game over screen."""
