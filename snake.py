@@ -70,3 +70,8 @@ class Snake:
         """Checks if the snake's head collides with its own body."""
         head = self._body[0]
         return head in self._body[1:]
+    
+    @property
+    def score(self) -> int:
+        """Returns the current score."""
+        return self._length - 1

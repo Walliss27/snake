@@ -9,6 +9,7 @@ from direction import Direction
 BLACK = (0, 0, 0)           # background
 GREEN = (0, 255, 0)         # snake
 RED = (255, 0, 0)           # apple
+WHITE = (255, 255, 255)     # text
 
 FPS = 15
 BLOCK_SIZE = 20
@@ -29,7 +30,8 @@ class Game:
         self._apple = Apple(0, 0)
         self._apple.spawn(width, height, self._block_size, self._snake.body)
         self._game_over = False
-        self._font = pygame.font.SysFont(None, 50)
+        self._font_title = pygame.font.SysFont(None, 50)
+        self._font_score = pygame.font.SysFont(None, 25)
 
     def handle_events(self) -> None:
         """Processes keyboard inputs and system events."""
@@ -62,23 +64,30 @@ class Game:
     def draw(self) -> None:
         """Renders all game objects on the screen."""
         self._screen.fill(BLACK)
+        current_score = self._snake.score
+        text_score = self._font_score.render("Score : " + str(current_score), True, WHITE)
+        self._screen.blit(text_score, (10, 10))
         pygame.draw.rect(self._screen, RED, [self._apple.x, self._apple.y, self._block_size, self._block_size])
         for block in self._snake.body:
             pygame.draw.rect(self._screen, GREEN, [block[0], block[1], self._block_size, self._block_size])
-
         pygame.display.update()
 
     def run(self) -> None:
         """Starts and maintains the game loop."""
         while True:
             self.handle_events()
-            self.update()
-            self.draw()
+            if not self._game_over:
+                self.update()
+                self.draw()
+            else:
+                self.show_game_over_screen()
             self._clock.tick(self._fps)
 
-    def show_game_over_screen() -> None:
+    def show_game_over_screen(self) -> None:
         """Display the Game over screen."""
-        pass
+        text_surface = self._font_title.render("GAME OVER", True, WHITE)
+        self._screen.blit(text_surface, (200, 150))
+        pygame.display.update()
 
 if __name__ == "__main__":
     game = Game(600, 400)
