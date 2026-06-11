@@ -26,12 +26,11 @@ class Game:
         self._screen = pygame.display.set_mode((width, height))
         pygame.display.set_caption("Snake Project")
         self._clock = pygame.time.Clock()
-        self._snake = Snake(x=width // 2, y=height // 2, block_size=self._block_size)
         self._apple = Apple(0, 0)
-        self._apple.spawn(width, height, self._block_size, self._snake.body)
-        self._game_over = False
+        self.reset()
         self._font_title = pygame.font.SysFont(None, 50)
         self._font_score = pygame.font.SysFont(None, 25)
+        self._high_score = 0
 
     def handle_events(self) -> None:
         """Processes keyboard inputs and system events."""
@@ -40,14 +39,18 @@ class Game:
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    self._snake.direction = Direction.LEFT
-                elif event.key == pygame.K_RIGHT:
-                    self._snake.direction = Direction.RIGHT
-                elif event.key == pygame.K_UP:
-                    self._snake.direction = Direction.UP
-                elif event.key == pygame.K_DOWN:
-                    self._snake.direction = Direction.DOWN
+                if self._game_over:
+                    if event.key == pygame.K_SPACE:
+                        self.reset()
+                else:
+                    if event.key == pygame.K_LEFT:
+                        self._snake.direction = Direction.LEFT
+                    elif event.key == pygame.K_RIGHT:
+                        self._snake.direction = Direction.RIGHT
+                    elif event.key == pygame.K_UP:
+                        self._snake.direction = Direction.UP
+                    elif event.key == pygame.K_DOWN:
+                        self._snake.direction = Direction.DOWN
 
     def update(self) -> None:
         """Updates the state of the game (movements and collisions)."""
@@ -60,6 +63,8 @@ class Game:
             self._game_over = True
         if self._snake.check_self_collision():
             self._game_over = True
+        if self._game_over and self._snake.score > self._high_score:
+            self._high_score = self._snake.score
         
     def draw(self) -> None:
         """Renders all game objects on the screen."""
@@ -67,6 +72,9 @@ class Game:
         current_score = self._snake.score
         text_score = self._font_score.render("Score : " + str(current_score), True, WHITE)
         self._screen.blit(text_score, (10, 10))
+        high_score = self._high_score
+        text_score = self._font_score.render("High Score : " + str(high_score), True, WHITE)
+        self._screen.blit(text_score, (10, 35))
         pygame.draw.rect(self._screen, RED, [self._apple.x, self._apple.y, self._block_size, self._block_size])
         for block in self._snake.body:
             pygame.draw.rect(self._screen, GREEN, [block[0], block[1], self._block_size, self._block_size])
@@ -87,7 +95,18 @@ class Game:
         """Display the Game over screen."""
         text_surface = self._font_title.render("GAME OVER", True, WHITE)
         self._screen.blit(text_surface, (200, 150))
+        text_restart = self._font_score.render("Press SPACE to play again", True, WHITE)
+        self._screen.blit(text_restart, (195, 210))
         pygame.display.update()
+
+    def reset(self) -> None:
+        """Resets the game state for a new playthrough."""
+        self._snake = Snake(x=self._width // 2, y=self._height // 2, block_size=self._block_size)
+        self._apple.spawn(self._width, self._height, self._block_size, self._snake.body)
+        self._game_over = False
+
+    def _load_high_score(self) -> int:
+        """Loads the high score from"""
 
 if __name__ == "__main__":
     game = Game(600, 400)
