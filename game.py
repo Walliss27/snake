@@ -105,9 +105,6 @@ class Game:
         self._apple.spawn(self._width, self._height, self._block_size, self._snake.body)
         self._game_over = False
 
-    def _load_high_score(self) -> int:
-        """Loads the high score from"""
-
 if __name__ == "__main__":
     game = Game(600, 400)
     game.run()
