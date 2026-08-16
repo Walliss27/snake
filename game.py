@@ -11,7 +11,7 @@ GREEN = (0, 255, 0)         # snake
 RED = (255, 0, 0)           # apple
 WHITE = (255, 255, 255)     # text
 
-FPS = 15
+FPS = 25
 BLOCK_SIZE = 20
 
 class Game:
@@ -32,6 +32,7 @@ class Game:
         self._font_score = pygame.font.SysFont(None, 25)
         self._high_score = 0
         self._game_started = False
+        self._ai_mode = False
 
     def handle_events(self) -> None:
         """Processes keyboard inputs and system events."""
@@ -41,12 +42,16 @@ class Game:
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if not self._game_started:
-                    if event.key == pygame.K_SPACE:
+                    if event.key == pygame.K_1 or event.key == pygame.K_KP1:
+                        self._ai_mode = False
                         self._game_started = True
-                if self._game_over:
+                    elif event.key == pygame.K_2 or event.key == pygame.K_KP2:
+                        self._ai_mode = True
+                        self._game_started = True
+                elif self._game_over:
                     if event.key == pygame.K_SPACE:
                         self.reset()
-                else:
+                elif not self._ai_mode:
                     if event.key == pygame.K_LEFT:
                         self._snake.direction = Direction.LEFT
                     elif event.key == pygame.K_RIGHT:
@@ -91,19 +96,51 @@ class Game:
             if not self._game_started:
                 self.show_start_screen()
             elif not self._game_over:
+                if self._ai_mode:
+                    self._run_ai()
                 self.update()
                 self.draw()
             else:
                 self.show_game_over_screen()
             self._clock.tick(self._fps)
 
+    def _run_ai(self):
+        start = self._snake.body[0]
+        target = self._apple.x, self._apple.y
+        came_from = self._snake._bfs(start, target, self._width, self._height)
+        path = self._snake._get_path(came_from, start, target)
+        if path:
+            next_node = path[0]
+        else:
+            target = self._snake.body[-1]
+            came_from = self._snake._bfs(start, target, self._width, self._height)
+            path = self._snake._get_path(came_from, start, target)
+            if path:
+                next_node = path[0]
+            else:
+                next_node = {Direction.UP: (start[0], start[1] - self._block_size),\
+                              Direction.DOWN: (start[0], start[1] + self._block_size),\
+                                  Direction.LEFT: (start[0] - self._block_size, start[1]),\
+                                      Direction.RIGHT: (start[0] + self._block_size, start[1])}\
+                                        [self._snake.direction]
+        if next_node[0] < start[0]:
+            self._snake.direction = Direction.LEFT
+        elif next_node[0] > start[0]:
+            self._snake.direction = Direction.RIGHT
+        elif next_node[1] < start[1]:
+            self._snake.direction = Direction.UP
+        elif next_node[1] > start[1]:
+            self._snake.direction = Direction.DOWN
+
     def show_start_screen(self) -> None:
         """Displays the start menu screen."""
         self._screen.fill(BLACK)
         text_surface = self._font_title.render("SNAKE GAME", True, GREEN)
         self._screen.blit(text_surface, (190, 150))
-        text_start = self._font_score.render("Press SPACE to start", True, WHITE)
-        self._screen.blit(text_start, (215, 210))
+        text_player = self._font_score.render("1. Human player", True, WHITE)
+        self._screen.blit(text_player, (215, 210))
+        text_ai = self._font_score.render("2. AI player", True, WHITE)
+        self._screen.blit(text_ai, (215, 240))
         pygame.display.update()
 
     def show_game_over_screen(self) -> None:
