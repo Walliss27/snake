@@ -1,9 +1,19 @@
-"""Module managing the apple's logic in the game."""
+"""
+Module managing the game's collectible item.
+
+Handles the logic, positioning, and spawning mechanics of the apple 
+within the game grid.
+"""
 
 import random
 
 class Apple:
-    """Represents the apple on the grid."""
+    """
+    Represents the apple object on the grid.
+
+    The apple is the target that the snake must consume to grow and increase 
+    the score. It respawns at random valid coordinates upon consumption.
+    """
 
     def __init__(self, x: int , y: int) -> None:
         """Initializes a new apple.

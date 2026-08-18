@@ -1,4 +1,9 @@
-"""Module managing the game's main loop."""
+"""
+Module managing the main game loop and environment state.
+
+Contains the core logic for rendering, event handling, and updating 
+the game mechanics for both human and AI players.
+"""
 
 import pygame
 import sys
@@ -15,7 +20,12 @@ FPS = 25
 BLOCK_SIZE = 20
 
 class Game:
-    """Represents the main loop of the game."""
+    """
+    Represents the main game environment.
+
+    Handles Pygame initialization, screen rendering, score tracking, and 
+    the step-by-step progression of the game state based on player or AI input.
+    """
     
     def __init__(self, width: int, height: int) -> None:
         """Initializes Pygame, the window, and game objects."""
@@ -33,6 +43,47 @@ class Game:
         self._high_score = 0
         self._game_started = False
         self._ai_mode = False
+
+    @property
+    def snake(self):
+        """Gets the current Snake instance in read-only mode."""
+        return self._snake
+
+    @property
+    def apple(self):
+        """Gets the current Apple instance in read-only mode."""
+        return self._apple
+
+    @property
+    def block_size(self) -> int:
+        """Gets the size of a grid block."""
+        return self._block_size
+
+    @property
+    def high_score(self) -> int:
+        """Gets the highest score achieved across all episodes."""
+        return self._high_score
+
+    @property
+    def fps(self) -> int:
+        """Gets the current frames per second limit."""
+        return self._fps
+
+    @fps.setter
+    def fps(self, value: int) -> None:
+        """
+        Sets the frames per second limit.
+
+        Args:
+            value (int): The new FPS limit. Must be strictly positive.
+
+        Raises:
+            ValueError: If the provided value is zero or negative.
+        """
+        if value > 0:
+            self._fps = value
+        else:
+            raise ValueError("FPS must be strictly positive.")
 
     def handle_events(self) -> None:
         """Processes keyboard inputs and system events."""
@@ -68,9 +119,7 @@ class Game:
         if head_x == self._apple.x and head_y == self._apple.y:
             self._snake.grow()
             self._apple.spawn(self._width, self._height, self._block_size, self._snake.body)
-        if head_x < 0 or head_x >= self._width or head_y < 0 or head_y >= self._height:
-            self._game_over = True
-        if self._snake.check_self_collision():
+        if self.is_collision(self._snake.body[0]):
             self._game_over = True
         if self._game_over and self._snake.score > self._high_score:
             self._high_score = self._snake.score
@@ -156,6 +205,69 @@ class Game:
         self._snake = Snake(x=self._width // 2, y=self._height // 2, block_size=self._block_size)
         self._apple.spawn(self._width, self._height, self._block_size, self._snake.body)
         self._game_over = False
+        self._score = 0
+
+    def play_step(self, action: int, render: bool = True):
+        """
+        Executes a single step of the game environment based on the AI's action.
+
+        Processes Pygame events, updates the snake's direction and position,
+        handles collisions, manages apple consumption, and calculates the reward.
+        Optionally renders the graphical interface.
+
+        Args:
+            action (int): The action chosen by the AI (0: turn left, 1: go straight, 2: turn right).
+            render (bool, optional): If True, updates the Pygame display and enforces FPS limits. Defaults to True.
+
+        Returns:
+            tuple: A tuple containing:
+                - reward (int): The reward gained (-100 for death, 10 for eating, 0 for moving).
+                - done (bool): True if the game is over (collision), False otherwise.
+                - score (int): The current game score.
+        """
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+        done = False
+        clock = [Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT]
+        current_dir = clock.index(self._snake.direction)
+        self._snake.direction = clock[(current_dir + action - 1) % 4]
+        self._snake.move()
+        head_x, head_y = self._snake.body[0]
+        if self.is_collision(self._snake.body[0]):
+            done = True
+            reward = -100
+            if self._score > self._high_score:
+                self._high_score = self._score
+        elif head_x == self._apple.x and head_y == self._apple.y:
+            self._snake.grow()
+            self._apple.spawn(self._width, self._height, self._block_size, self._snake.body)
+            self._score += 1
+            reward = 10
+        else:
+            reward = 0
+        if render:
+            self.draw()
+            self._clock.tick(self._fps)
+        return reward, done, self._score
+
+    def is_collision(self, pt: tuple) -> bool:
+        """
+        Checks if a specific point collides with the game boundaries or the snake's body.
+
+        Args:
+            pt (tuple): The (x, y) coordinates of the point to evaluate.
+
+        Returns:
+            bool: True if the point hits a wall or the snake's body (excluding the head), False otherwise.
+        """
+        x, y = pt
+        if x < 0 or x >= self._width or y < 0 or y >= self._height:
+            return True
+        if pt in self._snake.body[1:]:
+            return True
+        return False
 
 if __name__ == "__main__":
     game = Game(600, 400)

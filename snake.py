@@ -1,13 +1,19 @@
-"""Module gérant la logique et l'état de l'entité principale du joueur."""
+"""
+Module managing the player entity and its physical state.
+
+Contains the logic for the snake's movement, growth, collision detection, 
+and pathfinding algorithms.
+"""
 
 from direction import Direction
 from collections import deque
 
 class Snake:
-    """Represents the snake controlled by the player.
-    
-    Manages the internal state of the snake, notably its current length,
-    its direction, and the coordinates of its entire body on the grid.
+    """
+    Represents the snake controlled by the player or AI.
+
+    Manages the coordinates of the snake's body parts, its current direction, 
+    length, and provides utility methods for movement and pathfinding (BFS).
     """
 
     def __init__(self, x : int , y : int, length : int = 1,\
@@ -77,7 +83,7 @@ class Snake:
         """Returns the current score."""
         return self._length - 1
 
-    def _bfs(self, start: tuple[int, int], target: tuple[int, int], width: int, height: int)\
+    def bfs(self, start: tuple[int, int], target: tuple[int, int], width: int, height: int)\
           -> dict[tuple[int, int], tuple[int, int]]:
         """
         Performs a breadth-first search to find the shortest path to the target.
@@ -109,7 +115,7 @@ class Snake:
                     came_from[neighbor] = current_node
         return came_from
         
-    def _get_path(self, came_from: dict, start: tuple, target: tuple) -> list:
+    def get_path(self, came_from: dict, start: tuple, target: tuple) -> list:
         """
         Reconstructs the shortest path from start to target using the came_from dictionary.
 
