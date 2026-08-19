@@ -156,14 +156,14 @@ class Game:
     def _run_ai(self):
         start = self._snake.body[0]
         target = self._apple.x, self._apple.y
-        came_from = self._snake._bfs(start, target, self._width, self._height)
-        path = self._snake._get_path(came_from, start, target)
+        came_from = self._snake.bfs(start, target, self._width, self._height)
+        path = self._snake.get_path(came_from, start, target)
         if path:
             next_node = path[0]
         else:
             target = self._snake.body[-1]
-            came_from = self._snake._bfs(start, target, self._width, self._height)
-            path = self._snake._get_path(came_from, start, target)
+            came_from = self._snake.bfs(start, target, self._width, self._height)
+            path = self._snake.get_path(came_from, start, target)
             if path:
                 next_node = path[0]
             else:
