@@ -167,11 +167,7 @@ class Game:
             if path:
                 next_node = path[0]
             else:
-                next_node = {Direction.UP: (start[0], start[1] - self._block_size),\
-                              Direction.DOWN: (start[0], start[1] + self._block_size),\
-                                  Direction.LEFT: (start[0] - self._block_size, start[1]),\
-                                      Direction.RIGHT: (start[0] + self._block_size, start[1])}\
-                                        [self._snake.direction]
+                next_node = self._choose_safest_cell(start)
         if next_node[0] < start[0]:
             self._snake.direction = Direction.LEFT
         elif next_node[0] > start[0]:
@@ -180,6 +176,47 @@ class Game:
             self._snake.direction = Direction.UP
         elif next_node[1] > start[1]:
             self._snake.direction = Direction.DOWN
+
+    def _choose_safest_cell(self, start: tuple) -> tuple:
+        """
+        Last-resort fallback used when neither the apple nor the tail is
+        reachable via bfs. Instead of moving blindly, evaluates every
+        immediately safe neighboring cell and picks the one that maximizes
+        the snake's remaining reachable space, favoring open areas over dead ends.
+ 
+        Args:
+            start (tuple): The (x, y) coordinates of the snake's head.
+ 
+        Returns:
+            tuple: The chosen neighboring cell. If no safe move exists,
+            returns the cell straight ahead.
+        """
+        forbidden_moves = {
+            Direction.UP: Direction.DOWN,
+            Direction.DOWN: Direction.UP,
+            Direction.LEFT: Direction.RIGHT,
+            Direction.RIGHT: Direction.LEFT,
+        }
+        candidates = {
+            Direction.UP: (start[0], start[1] - self._block_size),
+            Direction.DOWN: (start[0], start[1] + self._block_size),
+            Direction.LEFT: (start[0] - self._block_size, start[1]),
+            Direction.RIGHT: (start[0] + self._block_size, start[1]),
+        }
+        best_cell = None
+        best_space = -1
+        for direction, cell in candidates.items():
+            if direction == forbidden_moves[self._snake.direction]:
+                continue
+            if self.is_collision(cell):
+                continue
+            space = self._snake.count_reachable_space(cell, self._width, self._height)
+            if space > best_space:
+                best_space = space
+                best_cell = cell
+        if best_cell is None:
+            return candidates[self._snake.direction]
+        return best_cell
 
     def show_start_screen(self) -> None:
         """Displays the start menu screen."""

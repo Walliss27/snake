@@ -114,6 +114,37 @@ class Snake:
                     queue.append(neighbor)
                     came_from[neighbor] = current_node
         return came_from
+
+    def count_reachable_space(self, start: tuple[int, int], width: int, height: int) -> int:
+        """
+        Counts how many cells are reachable from start via bfs, avoiding
+        walls and the snake's own body.
+ 
+        Args:
+            start: The (x, y) coordinates to flood-fill from.
+            width: The total width of the game grid.
+            height: The total height of the game grid.
+ 
+        Returns:
+            The number of distinct reachable cells, including start itself.
+            Returns 0 if start itself is blocked.
+        """
+        blocked = set(self._body[:-1])
+        if start in blocked:
+            return 0
+        directions = [(0, -self._block_size), (0, self._block_size),
+                      (-self._block_size, 0), (self._block_size, 0)]
+        visited = {start}
+        queue = deque([start])
+        while queue:
+            current_node = queue.popleft()
+            for dx, dy in directions:
+                neighbor = (current_node[0] + dx, current_node[1] + dy)
+                if neighbor not in blocked and neighbor not in visited \
+                        and 0 <= neighbor[0] < width and 0 <= neighbor[1] < height:
+                    visited.add(neighbor)
+                    queue.append(neighbor)
+        return len(visited)
         
     def get_path(self, came_from: dict, start: tuple, target: tuple) -> list:
         """
